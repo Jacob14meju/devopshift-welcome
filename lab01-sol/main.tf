@@ -51,3 +51,10 @@ module "vm1" {
 resource "time_sleep" "wait_for_ip" {
   create_duration = "30"
 }
+
+resource "null_resource" "name" {
+  provisioner "remote-exec" {
+    
+  }
+}
+
