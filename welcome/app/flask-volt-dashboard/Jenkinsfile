@@ -16,6 +16,36 @@ pipeline {
             }
         }
 
+        stage('wait for user aproval'){
+            steps{
+                def userInput = input message: 'Do you want to proceed to deploy the Flask application?'{
+                    parameters: choice[name: 'proceed', choices: 'yes/no', description: 'Choose yes to proceed, no to abort']
+                }
+                env.USER_INPUT = userInput
+            }
+        }
+
+        stage('proceed to display'){
+            when {
+                expression { env.USER_INPUT == 'yes' }
+            }
+            steps{
+                echo "User chose to proceed with deployment."
+            }
+        }
+
+        stage('abort display'){
+            when{
+                expression {env.USER_INPUT == 'no'}
+            }
+            steps{
+                script{
+                    echo "User chose to abort the deployment."
+                    error "Aborting the pipeline as per user request."
+                }
+            }
+        }
+
         stage('Setup Python Environment and Install Dependencies') {
             steps {
                 dir("${PROJECT_HOME}") {
@@ -82,6 +112,13 @@ pipeline {
                             echo "Flask application is running successfully."
                         }
                     }
+                }
+            }
+        }
+        stage('artifact logs'){
+            steps{
+                dir('$(PROJECT_HOME)'){
+                    archiveArtifacts artifacts: 'flask_app.log', allowEmptyArchive: true
                 }
             }
         }
